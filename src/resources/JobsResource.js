@@ -5,7 +5,8 @@ const { Op } = require('sequelize');
 const { getProfile } = require('../middleware/getProfile');
 const { Contract, Job } = require('../model');
 
-// Method: GET, Path: /jobs/unpaid
+const IN_PROGRESS_STATUS = 'in_progress';
+
 router.get('/unpaid', getProfile, async (req, res) => {
     const { profile } = req;
 
@@ -13,7 +14,7 @@ router.get('/unpaid', getProfile, async (req, res) => {
         const contracts = await Contract.findAll({
             where: {
                 [Op.or]: [{ ClientId: profile.id }, { ContractorId: profile.id }],
-                status: 'in_progress'
+                status: IN_PROGRESS_STATUS
             }
         });
 

@@ -5,16 +5,15 @@ const { Op } = require('sequelize');
 const { getProfile } = require('../middleware/getProfile');
 const { Contract } = require('../model');
 
+const { getContractById, getNonTerminatedContractsForProfile } = require('../repository/ContractRepository')
+
 // Method: GET, Path: /contracts/:id
 router.get('/:id', getProfile, async (req, res) => {
     const { id } = req.params;
     const { profile } = req;
 
     try {
-        const contract = await Contract.findOne({
-            where: { id },
-            include: [{ association: 'Client' }, { association: 'Contractor' }]
-        });
+        const contract = getContractById(id)
 
         if (!contract) {
             return res.status(404).end();
@@ -36,13 +35,7 @@ router.get('/', getProfile, async (req, res) => {
     const { profile } = req;
 
     try {
-        const contracts = await Contract.findAll({
-            where: {
-                [Op.or]: [{ ClientId: profile.id }, { ContractorId: profile.id }],
-                status: { [Op.ne]: 'terminated' }
-            }
-        });
-
+        const contracts = getNonTerminatedContractsForProfile(profile.id);
         res.json(contracts);
     } catch (error) {
         console.error('Error retrieving contracts:', error);
