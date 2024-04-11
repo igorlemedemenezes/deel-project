@@ -1,4 +1,4 @@
-const { Contract, Profile, Job} = require('../model');
+const { Contract, Profile, Job } = require('../model');
 const { Op } = require('sequelize');
 
 const TERMINATED_STATUS = 'terminated'
@@ -29,7 +29,7 @@ const getNonTerminatedContractsForProfile = async (profileId) => {
 }
 
 const getInProgressContractsForProfile = async (profileId) => {
-    try{
+    try {
         return await Contract.findAll({
             where: {
                 [Op.or]: [{ ClientId: profileId }, { ContractorId: profileId }],
@@ -43,7 +43,7 @@ const getInProgressContractsForProfile = async (profileId) => {
 
 const getContractsWithPaidJobsInRange = async (start, end) => {
     try {
-        const contractsWithDataRange = await Contract.findAll({
+        return await Contract.findAll({
             include: [
                 {
                     model: Profile,
@@ -60,11 +60,37 @@ const getContractsWithPaidJobsInRange = async (start, end) => {
                 }
             ]
         });
-        
-        return contractsWithDataRange;
     } catch (error) {
         throw new Error('Error fetching contracts with paid jobs: ' + error.message);
     }
 };
 
-module.exports = { getContractById, getNonTerminatedContractsForProfile, getInProgressContractsForProfile, getContractsWithPaidJobsInRange };
+const getContractsByDateRange = async (start, end) => {
+    try {
+        return await Contract.findAll({
+            include: [
+                {
+                    model: Profile,
+                    as: 'Contractor',
+                },
+                {
+                    model: Profile,
+                    as: 'Client',
+                },
+                {
+                    model: Job,
+                    where: {
+                        paid: true,
+                        paymentDate: {
+                            [Op.between]: [start, end]
+                        }
+                    },
+                }
+            ]
+        });
+    } catch (error) {
+        throw new Error('Error getting contracts by date range: ' + error.message);
+    }
+};
+
+module.exports = { getContractById, getNonTerminatedContractsForProfile, getInProgressContractsForProfile, getContractsWithPaidJobsInRange, getContractsByDateRange };
