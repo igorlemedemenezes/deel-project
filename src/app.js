@@ -9,8 +9,10 @@ app.set('models', sequelize.models)
 
 const ContractsResource = require('./resources/ContractsResource');
 const JobsResource = require('./resources/JobsResource');
+const BalanceResource = require('./resources/BalanceResource');
 
-app.use('/contracts', ContractsResource);
 app.use('/jobs', JobsResource);
+app.use('/balances', BalanceResource);
+app.use('/contracts', ContractsResource);
 
 module.exports = app;
