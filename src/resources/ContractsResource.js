@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { Op } = require('sequelize');
 
 const { getProfile } = require('../middleware/getProfile');
 const { Contract } = require('../model');
 
-const { getContractById, getNonTerminatedContractsForProfile } = require('../repository/ContractRepository')
+const { getNonTerminatedContractsForProfile } = require('../repository/ContractRepository')
+const { getContractByForProfileId } = require('../service/ContractService')
 
 // Method: GET, Path: /contracts/:id
 router.get('/:id', getProfile, async (req, res) => {
@@ -13,20 +13,12 @@ router.get('/:id', getProfile, async (req, res) => {
     const { profile } = req;
 
     try {
-        const contract = getContractById(id)
-
-        if (!contract) {
-            return res.status(404).end();
-        }
-
-        if (contract.Client.id !== profile.id && contract.Contractor.id !== profile.id) {
-            return res.status(403).json({ error: 'Unauthorized' });
-        }
-
+        const contract = await getContractByForProfileId(id, profile.id)
         res.json(contract);
     } catch (error) {
         console.error('Error retrieving contract:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        const status = error.status || 500;
+        res.status(status).json({ error: error.message });
     }
 });
 
@@ -35,7 +27,7 @@ router.get('/', getProfile, async (req, res) => {
     const { profile } = req;
 
     try {
-        const contracts = getNonTerminatedContractsForProfile(profile.id);
+        const contracts = await getNonTerminatedContractsForProfile(profile.id);
         res.json(contracts);
     } catch (error) {
         console.error('Error retrieving contracts:', error);
