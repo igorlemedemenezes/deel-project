@@ -1,4 +1,4 @@
-const { Contract } = require('../model');
+const { Contract, Profile, Job} = require('../model');
 const { Op } = require('sequelize');
 
 const TERMINATED_STATUS = 'terminated'
@@ -41,4 +41,30 @@ const getInProgressContractsForProfile = async (profileId) => {
     }
 }
 
-module.exports = { getContractById, getNonTerminatedContractsForProfile, getInProgressContractsForProfile };
+const getContractsWithPaidJobsInRange = async (start, end) => {
+    try {
+        const contractsWithDataRange = await Contract.findAll({
+            include: [
+                {
+                    model: Profile,
+                    as: 'Contractor',
+                },
+                {
+                    model: Job,
+                    where: {
+                        paid: true,
+                        paymentDate: {
+                            [Op.between]: [start, end]
+                        }
+                    },
+                }
+            ]
+        });
+        
+        return contractsWithDataRange;
+    } catch (error) {
+        throw new Error('Error fetching contracts with paid jobs: ' + error.message);
+    }
+};
+
+module.exports = { getContractById, getNonTerminatedContractsForProfile, getInProgressContractsForProfile, getContractsWithPaidJobsInRange };
