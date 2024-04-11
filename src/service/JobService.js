@@ -1,4 +1,4 @@
-const { sequelize, Profile, Job } = require('../model');
+const { sequelize, Profile } = require('../model');
 const { getJobById, updateJobPayment } = require('../repository/JobRepository');
 
 const payForJob = async (jobId, profileId) => {

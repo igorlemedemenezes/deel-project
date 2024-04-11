@@ -1,28 +1,42 @@
-const { sequelize } = require('../model');
-const { Op } = require('sequelize')
+const {Contract, Profile, Job} = require('../model');
 
-const getBestProfession = async (startDate, endDate) => {
+const { Op } = require('sequelize')
+const { DateTime } = require("luxon");
+
+const getBestProfession = async (start, end) => {
+    const startDate = DateTime.fromFormat(start, "dd-MM-yyyy");
+    const endDate = DateTime.fromFormat(end, "dd-MM-yyyy");
+
     try {
-        const result = await sequelize.query(`
-            SELECT p.profession, SUM(j.price) AS totalEarned
-            FROM Jobs j
-            JOIN Contracts c ON j.ContractId = c.id
-            JOIN Profiles p ON c.ContractorId = p.id
-            WHERE j.paymentDate BETWEEN :startDate AND :endDate
-            GROUP BY p.profession
-            ORDER BY totalEarned DESC
-            LIMIT 1
-        `, {
-            replacements: { startDate, endDate },
-            type: sequelize.QueryTypes.SELECT
+        const contractsWithDataRange =  await Contract.findAll({
+            include: [
+                {
+                    model: Profile,
+                    as: 'Contractor',
+                },
+                {
+                    model: Job,
+                    where: {
+                        paid: true,
+                        paymentDate: {
+                            [Op.between]: [start, end]
+                        }
+                    },
+                }
+            ]
         });
 
-        if (result.length === 0) {
-            throw new Error('No data found for the specified period');
-        }
+        const result = contractsWithDataRange.map(contract => {
+            const totalPrice = contract.Jobs.reduce((prev, curr) => {
+                return prev + curr.price;
+            }, 0);
+            contract['totalPrice'] = totalPrice;
+            const client=contract.Client;
+            return { paid: totalPrice, id: client.id, fullName: `${client.firstName} ${client.lastName}`};
+        });
 
-        // Retorna a profissão com maior ganho
-        return result[0].Contractor.profession;
+        const best = result.sort((a, b) => b.paid - a.paid)
+        return best.slice(0, 2);
     } catch (error) {
         throw new Error('Error fetching best profession: ' + error.message);
     }
