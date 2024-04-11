@@ -1,4 +1,4 @@
-const { Job } = require('../model')
+const { Job, Contract } = require('../model')
 const { Op } = require('sequelize')
 
 const getJobById = async (jobId) => {
@@ -27,4 +27,20 @@ const getUnpaidJobsByContractIds = async (contracts) => {
     }
 };
 
-module.exports = { getJobById, getUnpaidJobsByContractIds, updateJobPayment };
+const getTotalUnpaidJobsPerClient = async (userId) => {
+    return await Job.sum('price', {
+        where: {
+            [Op.and]: [
+                { paid: { [Op.not]: true } },
+                { '$Contract.ClientId$': userId }
+            ]
+        },
+        include: [{
+            model: Contract,
+            attributes: [],
+            where: { ClientId: userId }
+        }]
+    }) || 0;
+}
+
+module.exports = { getJobById, getUnpaidJobsByContractIds, updateJobPayment, getTotalUnpaidJobsPerClient };

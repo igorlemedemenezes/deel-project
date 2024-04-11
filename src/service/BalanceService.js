@@ -1,5 +1,5 @@
-const { sequelize, Profile, Job, Contract } = require('../model');
-const { Op } = require('sequelize')
+const { sequelize, Profile } = require('../model');
+const { getTotalUnpaidJobsPerClient } = require('../repository/JobRepository')
 
 const depositIntoBalanceForUserId = async (userId, amount) => {
     try {
@@ -8,15 +8,7 @@ const depositIntoBalanceForUserId = async (userId, amount) => {
             throw new Error('User not found or not a client');
         }
 
-        const totalUnpaidJobs  = await Job.sum('price', {
-            where: {
-                [Op.or]: [{paid: null}, {paid: false}]
-            },
-            include: [{
-                model: Contract,
-                where: { ClientId: userId }
-            }]
-        });
+        const totalUnpaidJobs = await getTotalUnpaidJobsPerClient(userId);
 
         const maximumDeposit = (totalUnpaidJobs || 0) * 0.25;
         if (amount > maximumDeposit) {
