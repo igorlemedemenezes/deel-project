@@ -6,7 +6,7 @@ const getBestClients = async (start, end, limit = 2) => {
     try {
         const contracts = await getContractsByDateRange(start, end);
         const professionTotalPrices = calculateProfessionTotalPrice(contracts);
-        return professionTotalPrices.sort((a,b) => b.paid - a.paid).slice(2)
+        return professionTotalPrices.sort((a,b) => b.paid - a.paid).slice(limit)
     } catch (error) {
         throw new Error('Error fetching best clients: ' + error.message);
     }
