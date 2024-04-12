@@ -1,4 +1,3 @@
-const { Op } = require('sequelize')
 const { DateTime } = require("luxon");
 
 const { getContractsWithPaidJobsInRange, getContractsByDateRange } = require("../repository/ContractRepository");

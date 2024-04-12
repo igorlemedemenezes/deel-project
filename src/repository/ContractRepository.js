@@ -1,4 +1,5 @@
 const { Contract, Profile, Job } = require('../model');
+const { Status } = require('../enum/Status');
 const { Op } = require('sequelize');
 
 const TERMINATED_STATUS = 'terminated'

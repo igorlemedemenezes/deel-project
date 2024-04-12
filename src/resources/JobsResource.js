@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-const { Job } = require('../model');
 const { getProfile } = require('../middleware/getProfile');
 
 const { getUnpaidJobsByContractIds } = require('../repository/JobRepository')

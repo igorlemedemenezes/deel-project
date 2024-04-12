@@ -5,8 +5,6 @@ const { getProfile } = require('../middleware/getProfile');
 
 const { depositIntoBalanceForUserId } = require('../service/BalanceService');
 
-const { Profile } = require('../model');
-
 // /balances/deposit/:userId
 router.post('/deposit/:userId', getProfile, async (req, res) => {
     const { userId } = req.params;

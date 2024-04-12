@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 
 const { getProfile } = require('../middleware/getProfile');
-const { Contract } = require('../model');
-
 const { getNonTerminatedContractsForProfile } = require('../repository/ContractRepository')
 const { getContractByForProfileId } = require('../service/ContractService')
 
